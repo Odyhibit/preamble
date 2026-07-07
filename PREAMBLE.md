@@ -1,7 +1,7 @@
 # PREAMBLE
 
 > Codebase map for coding agents: interfaces and locations, no implementation.
-> Generated at commit 298e691 on 2026-07-07 — 28 files, 1,646 source lines.
+> Generated at commit 45c97dc on 2026-07-07 — 29 files, 1,743 source lines.
 > If this commit is far behind HEAD, regenerate with `preamble` before trusting line numbers.
 > Symbol lines end with `@ L<n>`; Read the file at that offset instead of searching.
 
@@ -35,6 +35,7 @@
 - test/fixtures/shapes/index.ts — barrel — re-exports from ./types.js, ../Scanner.js
 - test/fixtures/shapes/types.ts — Shared VIN domain types.
 - test/fixtures/useVinScanner.js — ZXing camera VIN scanner hook
+- test/walk.test.js
 
 ---
 
@@ -75,13 +76,13 @@ internal:
   DESC_INLINE_LIMIT @ L7
   renderSymbol(sym: SymbolInfo) @ L37
 
-## src/core/walk.js  (53 lines)  — File discovery: enumerate extractable source files under a root, honoring the root .gitignore plus built-in ignores.
+## src/core/walk.js  (80 lines)  — File discovery: enumerate extractable source files under a root, honoring the root .gitignore plus built-in ignores.
 imports: node:fs, node:path, ignore
 exported:
-  walk(root: string, extensions: string[]) -> string[] @ L21
+  walk(root: string, extensions: string[]) -> string[] @ L45
 internal:
-  DEFAULT_IGNORES @ L10
-  walkDir(root, dir, ig, extSet, results) @ L33
+  DEFAULT_IGNORES @ L14
+  walkDir(root, dir, ig, extSet, results) @ L60
 
 ## src/extractors/jsts/frameworks/barrel.js  (13 lines)  — Barrel refiner: an index file that only re-exports owns no interface — record it as a re-export map, not as symbols.
 exported:
@@ -281,3 +282,8 @@ internal:
   normalizeVin(raw) @ L47    # uppercase, strip I/O/Q
   transliterate(c) @ L51
   WEIGHTS @ L55
+
+## test/walk.test.js  (70 lines)
+imports: node:test, node:assert/strict, node:fs, node:os, node:path, ../src/core/walk.js
+internal:
+  makeTree(files) @ L8

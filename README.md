@@ -32,6 +32,22 @@ npx preamble snippet                # CLAUDE.md blurb pointing agents at the map
 
 Languages in v1: JavaScript / TypeScript (`.js .jsx .ts .tsx .mjs .cjs`).
 
+## What gets indexed
+
+Everything your `.gitignore` excludes is skipped, plus built-in defaults for
+generated and vendored trees: dependency folders, build output and caches
+(`dist`, `build`, `.next`, `.svelte-kit`, `.expo`, `.dart_tool`, …), and
+framework copy-steps that would otherwise index your app twice — notably
+Capacitor's `cap sync` copies (`android/app/src/main/assets/public`,
+`ios/App/App/public`) and Cordova's root `platforms/`/`plugins/` trees and
+runtime shims. Defaults only cover high-confidence generated paths; hiding
+real source is treated as worse than indexing some noise.
+
+For repo-specific tuning, add a `.preambleignore` at the root (gitignore
+syntax). It loads last, so it can both add exclusions (e.g. a vendored
+`qrcodegen.js` that git tracks) and re-include an over-eager default with a
+`!pattern` line.
+
 ## What goes in the map
 
 - **Exports drive visibility.** `export …`, `export default`, re-exports, and
