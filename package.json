@@ -7,6 +7,11 @@
   "bin": {
     "preamble": "./bin/preamble.js"
   },
+  "files": [
+    "bin",
+    "src",
+    "README.md"
+  ],
   "engines": {
     "node": ">=20"
   },
