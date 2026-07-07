@@ -1,0 +1,31 @@
+{
+  "name": "@odyhibit/preamble",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Generates PREAMBLE.md — a compact Markdown index of a codebase, designed to be read by AI coding agents before the code.",
+  "type": "module",
+  "bin": {
+    "preamble": "./bin/preamble.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test \"test/*.test.js\""
+  },
+  "keywords": [
+    "ai",
+    "coding-agent",
+    "codebase-index",
+    "tree-sitter",
+    "claude-code"
+  ],
+  "author": "odyhibit <josh.2990@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "ignore": "^7.0.5",
+    "tree-sitter-javascript": "^0.25.0",
+    "tree-sitter-typescript": "^0.23.2",
+    "web-tree-sitter": "^0.26.10"
+  }
+}
