@@ -1,7 +1,6 @@
 {
   "name": "@odyhibit/preamble",
   "version": "0.1.0",
-  "private": true,
   "description": "Generates PREAMBLE.md — a compact Markdown index of a codebase, designed to be read by AI coding agents before the code.",
   "type": "module",
   "bin": {
@@ -12,6 +11,9 @@
     "src",
     "README.md"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "engines": {
     "node": ">=20"
   },

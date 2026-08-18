@@ -6,8 +6,8 @@ file for a whole repo: interfaces and locations, never implementation bodies.
 
 An agent starting a task needs three things cheaply: **where to look** (file →
 purpose), **the shape of the code there** (signatures + line numbers, no
-bodies), and **what connects to what** (internal imports). The map trades a
-fixed upfront token cost for avoiding many exploratory grep/glob/read calls.
+bodies), and **what connects to what** (internal imports). 
+When an agent reads the generated map, it spends a fixed upfront context cost that can replace many exploratory grep glob/read calls..
 
 ```
 ## src/hooks/useVinScanner.js  (178 lines)  — ZXing camera VIN scanner hook
@@ -22,15 +22,14 @@ internal:
 ## Install & use
 
 ```sh
-npm install -D @odyhibit/preamble   # not yet published
-npx preamble                        # writes PREAMBLE.md at the repo root
-npx preamble install-hook           # git post-commit hook: regenerate via cache
-npx preamble snippet                # CLAUDE.md blurb pointing agents at the map
+npm install -g @odyhibit/preamble   # after publishing
+preamble --root /path/to/repo       # writes PREAMBLE.md at that repo root
+preamble init --root /path/to/repo  # generate + print the agent snippet
+preamble init --root /path/to/repo --hook
+preamble snippet                    # agent blurb pointing agents at the map
 ```
 
-`preamble generate` accepts `--force` (ignore cache), `--quiet`, `--root <dir>`.
 
-Languages in v1: JavaScript / TypeScript (`.js .jsx .ts .tsx .mjs .cjs`).
 
 ## What gets indexed
 
@@ -72,8 +71,7 @@ The unit of the system is a **per-file entry**, cached in `.preamble/cache.json`
 keyed on the file's content hash (+ extractor version). Delivery is assembly on
 top of that cache — v1 ships static delivery (concatenate everything into
 `PREAMBLE.md`); a JIT/query mode can later read the same cache and return only
-matching entries. The cache stores structured entries, not rendered Markdown,
-so that seam stays open.
+matching entries. The cache stores structured entries, not rendered Markdown.
 
 ```
 src/index.js                 generate(): walk -> cache -> extract -> assemble
@@ -94,8 +92,8 @@ any platform.
 1. Pick a repo of non-trivial size and a concrete task (e.g. "add a field to X
    and thread it through to the API").
 2. **Session A:** repo as-is. Run the task in Claude Code, note `/cost`.
-3. **Session B:** fresh session, same task, after `npx preamble` and adding the
-   `npx preamble snippet` output to CLAUDE.md. Note `/cost`.
+3. **Session B:** fresh session, same task, after `preamble` and adding the
+   `preamble snippet` output to CLAUDE.md. Note `/cost`.
 4. Compare total tokens and the number of Grep/Glob/Read calls in each
    transcript. The map should cut exploration noticeably; if the repo is small
    enough to read outright, it won't — that's expected. The break-even grows
@@ -103,15 +101,9 @@ any platform.
 
 ## Keeping it fresh
 
-`npx preamble install-hook` installs a post-commit hook that regenerates the
-map through the cache (only changed files re-extract; unchanged repos take
-~tens of milliseconds). The map's header records the generating commit as a
-staleness tripwire. Post-commit means the refreshed map lands in your *next*
-commit — deliberate: hooks that mutate the index mid-commit fight with partial
-staging.
+`preamble init --hook` or `preamble install-hook --root <repo>` installs a
+post-commit hook that regenerates the map through the cache (only changed files
+re-extract; unchanged repos take ~tens of milliseconds). 
+The map's header records the generating commit as a staleness tripwire. 
+Post-commit means the refreshed map lands in your *next* commit — deliberate: hooks that mutate the index mid-commit fight with partial staging.
 
-## Adding a language later
-
-Implement `extract(source, path) -> Entry` and register it with an extension
-list in `src/extractors/registry.js`. Core walking, caching, rendering, and
-assembly are language-agnostic.

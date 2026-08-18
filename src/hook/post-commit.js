@@ -11,14 +11,49 @@
 import { writeFileSync, existsSync, chmodSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-const HOOK_BODY = `#!/bin/sh
-# preamble: regenerate PREAMBLE.md (content-hash cached; only changed files re-extract)
-npx --no-install preamble generate --quiet || true
+const BLOCK_START = '# preamble: begin managed block';
+const BLOCK_END = '# preamble: end managed block';
+
+export function shellQuote(value) {
+  return `'${String(value).replaceAll("'", "'\\''")}'`;
+}
+
+export function executableCommand(argv = process.argv) {
+  if (!argv[1]) return 'preamble';
+  return `${shellQuote(process.execPath)} ${shellQuote(argv[1])}`;
+}
+
+export function hookBody(command = 'preamble') {
+  return `${BLOCK_START}
+# Regenerate PREAMBLE.md through the central preamble install.
+cd "$(git rev-parse --show-toplevel 2>/dev/null || pwd)" || exit 0
+${command} generate --quiet --root "$PWD" || true
+${BLOCK_END}
 `;
+}
 
-const MARKER = '# preamble:';
+function fullHook(command) {
+  return `#!/bin/sh
+${hookBody(command)}`;
+}
 
-export function installHook(root) {
+function upsertManagedBlock(current, command) {
+  const next = hookBody(command).trimEnd();
+  const blockPattern = new RegExp(`${escapeRegExp(BLOCK_START)}[\\s\\S]*?${escapeRegExp(BLOCK_END)}`);
+  if (blockPattern.test(current)) return current.replace(blockPattern, next);
+
+  const legacyPattern =
+    /\n?# preamble: regenerate PREAMBLE\.md \(content-hash cached; only changed files re-extract\)\nnpx --no-install preamble generate --quiet \|\| true\n?/;
+  if (legacyPattern.test(current)) return current.replace(legacyPattern, `\n${next}\n`);
+
+  return `${current.trimEnd()}\n\n${next}\n`;
+}
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+export function installHook(root, { command = 'preamble' } = {}) {
   const hooksDir = join(root, '.git', 'hooks');
   if (!existsSync(hooksDir)) {
     throw new Error(`no .git/hooks directory under ${root} — is this a git repository?`);
@@ -26,11 +61,11 @@ export function installHook(root) {
   const hookPath = join(hooksDir, 'post-commit');
   if (existsSync(hookPath)) {
     const current = readFileSync(hookPath, 'utf8');
-    if (current.includes(MARKER)) return hookPath; // already installed
-    // Append to an existing hook rather than clobbering it.
-    writeFileSync(hookPath, current.trimEnd() + '\n\n' + HOOK_BODY.split('\n').slice(1).join('\n'));
+    // Append to an existing hook rather than clobbering it; replace our own
+    // managed block when reinstalling.
+    writeFileSync(hookPath, upsertManagedBlock(current, command));
   } else {
-    writeFileSync(hookPath, HOOK_BODY);
+    writeFileSync(hookPath, fullHook(command));
   }
   chmodSync(hookPath, 0o755);
   return hookPath;
