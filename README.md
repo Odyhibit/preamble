@@ -1,4 +1,6 @@
 # preamble
+This script creates a code map that coding agents can use to speed up discovery, and reduce token usage. Git commits can auto run the script, and 
+keep the code map up to date.
 
 Generates `PREAMBLE.md` — a compact Markdown index of a codebase, designed to be
 read by AI coding agents *before* the code. Think of it as a generated header
