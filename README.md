@@ -2,31 +2,26 @@
 
 Generates `PREAMBLE.md` — a compact Markdown index of a codebase, designed to be
 read by AI coding agents *before* the code. Think of it as a generated header
-file for a whole repo: interfaces and locations, never implementation bodies.
+file for a whole repo: interfaces and locations, not implementation bodies.
 
-An agent starting a task needs three things cheaply: **where to look** (file →
-purpose), **the shape of the code there** (signatures + line numbers, no
-bodies), and **what connects to what** (internal imports). 
+An agent starting a task needs to discover three things: 
+ * **where to look** (file → purpose) 
+ * **the shape of the code there** (signatures + line numbers, no bodies)
+ * **what connects to what** (internal imports)
+
+
 When an agent reads the generated map, it spends a fixed upfront context cost that can replace many exploratory grep glob/read calls..
 
-```
-## src/hooks/useVinScanner.js  (178 lines)  — ZXing camera VIN scanner hook
-imports: react, @zxing/browser, ./lib/vinValidate
-exported:
-  useVinScanner(videoRef) -> {vin, error, scanning, start, stop} @ L14
-    # camera lifecycle + continuous decode; auto-stops on valid VIN
-internal:
-  validateChecksum(vin: string) -> boolean @ L92    # ISO 3779 check digit
-```
 
 ## Install & use
 
 ```sh
-npm install -g @odyhibit/preamble   # after publishing
-preamble --root /path/to/repo       # writes PREAMBLE.md at that repo root
-preamble init --root /path/to/repo  # generate + print the agent snippet
-preamble init --root /path/to/repo --hook
-preamble snippet                    # agent blurb pointing agents at the map
+npm install -g @odyhibit/preamble         # after publishing
+preamble --root /path/to/repo             # writes PREAMBLE.md at that repo root
+preamble init --root /path/to/repo        # generate + print the agent snippet
+preamble init --root /path/to/repo --hook # same as above plus create git hook to auto update on commit
+preamble snippet                          # agent blurb pointing agents at the map
+preamble                                  # if you want to update without doing a commit
 ```
 
 
@@ -98,12 +93,4 @@ any platform.
    transcript. The map should cut exploration noticeably; if the repo is small
    enough to read outright, it won't — that's expected. The break-even grows
    with repo size.
-
-## Keeping it fresh
-
-`preamble init --hook` or `preamble install-hook --root <repo>` installs a
-post-commit hook that regenerates the map through the cache (only changed files
-re-extract; unchanged repos take ~tens of milliseconds). 
-The map's header records the generating commit as a staleness tripwire. 
-Post-commit means the refreshed map lands in your *next* commit — deliberate: hooks that mutate the index mid-commit fight with partial staging.
 
