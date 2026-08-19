@@ -8,7 +8,7 @@ file for a whole repo: interfaces and locations, not implementation bodies.
 
 An agent starting a task needs to discover three things: 
  * **where to look** (file → purpose) 
- * **the shape of the code there** (signatures + line numbers, no bodies)
+ * **the shape of the code there** (signatures + line numbers)
  * **what connects to what** (internal imports)
 
 
